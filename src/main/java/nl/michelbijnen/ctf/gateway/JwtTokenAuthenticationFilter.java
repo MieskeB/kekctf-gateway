@@ -1,0 +1,102 @@
+package nl.michelbijnen.ctf.gateway;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.ByteSource;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class JwtTokenAuthenticationFilter implements WebFilter {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        try {
+            this.logger.debug("Started checking JWT token");
+
+            final String headerName = "Authorization";
+            final String tokenPrefix = "Bearer ";
+
+            final List<String> headerList = exchange.getRequest().getHeaders().get(headerName);
+
+            if (headerList == null) {
+                this.logger.debug("No Authorization headers found");
+                return chain.filter(exchange);
+            }
+
+            final String header = headerList.get(0);
+
+            if (!header.startsWith(tokenPrefix)) {
+                this.logger.debug("Authorization header does not start with 'Bearer '");
+                return chain.filter(exchange);
+            }
+
+            final String token = header.replace(tokenPrefix, "");
+
+            URL url = new URL("http://localhost:8082/checktoken");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+
+            con.setRequestProperty("Authorization", token);
+
+            int status = con.getResponseCode();
+
+            if (status > 299) {
+                this.logger.warn("JWT token " + token + " invalid");
+                // User is not authenticated
+                return chain.filter(exchange);
+            }
+
+            InputStream inputStream = con.getInputStream();
+            ByteSource byteSource = new ByteSource() {
+                @Override
+                public InputStream openStream() throws IOException {
+                    return inputStream;
+                }
+            };
+
+            JSONObject body = new JSONObject(byteSource.asCharSource(Charsets.UTF_8).read());
+            String userId = body.getString("userId");
+
+            this.logger.info("User with userId '" + userId + "' authorized access");
+            if (exchange.getRequest().getHeaders().get("requestingUserId") != null) {
+                this.logger.warn("User with userId '" + userId + "' tried to forge the requestingUserId header");
+                return chain.filter(exchange);
+            }
+
+            // Add the requestingUserId to the header
+            exchange.getRequest().mutate().header("requestingUserId", userId);
+
+            // Get role
+            List<String> authorities = new ArrayList<>();
+            // TODO get this from auth request
+            authorities.add("ROLE_USER");
+
+            // Authenticate the user
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userId, null, authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+
+            this.logger.debug("Authenticated: " + SecurityContextHolder.getContext().getAuthentication().isAuthenticated());
+        } catch (IOException e) {
+            this.logger.error(e.getMessage());
+        }
+
+        return chain.filter(exchange);
+    }
+}
