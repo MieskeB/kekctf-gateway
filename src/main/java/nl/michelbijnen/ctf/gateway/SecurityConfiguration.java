@@ -31,7 +31,6 @@ public class SecurityConfiguration {
                         swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN)
                 ))
                 .and()
-//                .addFilterBefore(new JwtTokenAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
                 .authenticationManager(this.authenticationManager)
                 .securityContextRepository(this.securityContextRepository)
                 .authorizeExchange()
