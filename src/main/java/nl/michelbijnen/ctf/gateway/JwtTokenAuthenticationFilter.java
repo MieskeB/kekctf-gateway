@@ -22,32 +22,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
 public class JwtTokenAuthenticationFilter implements WebFilter {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         try {
-            this.logger.debug("Started checking JWT token");
-
-            final String headerName = "Authorization";
-            final String tokenPrefix = "Bearer ";
-
-            final List<String> headerList = exchange.getRequest().getHeaders().get(headerName);
-
-            if (headerList == null) {
-                this.logger.debug("No Authorization headers found");
-                return chain.filter(exchange);
-            }
-
+            final List<String> headerList = exchange.getRequest().getHeaders().get("Authorization");
             final String header = headerList.get(0);
 
-            if (!header.startsWith(tokenPrefix)) {
-                this.logger.debug("Authorization header does not start with 'Bearer '");
-                return chain.filter(exchange);
-            }
-
-            final String token = header.replace(tokenPrefix, "");
+            final String token = header.replace("Bearer", "");
 
             URL url = new URL("http://localhost:8082/checktoken");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -56,12 +41,6 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
             con.setRequestProperty("Authorization", token);
 
             int status = con.getResponseCode();
-
-            if (status > 299) {
-                this.logger.warn("JWT token " + token + " invalid");
-                // User is not authenticated
-                return chain.filter(exchange);
-            }
 
             InputStream inputStream = con.getInputStream();
             ByteSource byteSource = new ByteSource() {
@@ -74,10 +53,8 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
             JSONObject body = new JSONObject(byteSource.asCharSource(Charsets.UTF_8).read());
             String userId = body.getString("userId");
 
-            this.logger.info("User with userId '" + userId + "' authorized access");
             if (exchange.getRequest().getHeaders().get("requestingUserId") != null) {
                 this.logger.warn("User with userId '" + userId + "' tried to forge the requestingUserId header");
-                return chain.filter(exchange);
             }
 
             // Add the requestingUserId to the header

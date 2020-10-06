@@ -15,6 +15,8 @@ import reactor.core.publisher.Mono;
 public class SecurityConfiguration {
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private SecurityContextRepository securityContextRepository;
 
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
@@ -31,6 +33,7 @@ public class SecurityConfiguration {
                 .and()
 //                .addFilterBefore(new JwtTokenAuthenticationFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
                 .authenticationManager(this.authenticationManager)
+                .securityContextRepository(this.securityContextRepository)
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                 .pathMatchers("/authentication-service/**").permitAll()
