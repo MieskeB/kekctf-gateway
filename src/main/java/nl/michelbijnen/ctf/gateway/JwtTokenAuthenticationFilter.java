@@ -30,9 +30,14 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         try {
             final List<String> headerList = exchange.getRequest().getHeaders().get("Authorization");
+
+            if (headerList == null) {
+                return chain.filter(exchange);
+            }
+
             final String header = headerList.get(0);
 
-            final String token = header.replace("Bearer", "");
+            final String token = header.replace("Bearer ", "");
 
             URL url = new URL("http://localhost:8082/checktoken");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
