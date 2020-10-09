@@ -39,8 +39,9 @@ public class SecurityConfiguration {
                 .securityContextRepository(this.securityContextRepository)
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                .pathMatchers("/authentication-service/**").permitAll()
                 .pathMatchers("/authentication-service/checktoken").denyAll()
+                .pathMatchers("/authentication-service/**").permitAll()
+                .pathMatchers(HttpMethod.POST, "/challenges-service/").hasRole("ROLE_ADMIN")
                 .anyExchange().authenticated()
                 .and().build();
     }
