@@ -54,16 +54,20 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
             };
             JSONObject body = new JSONObject(byteSource.asCharSource(Charsets.UTF_8).read());
             String userId = body.getString("userId");
+            String role = body.getString("role");
+
+            if (role == null) {
+                role = "ROLE_USER";
+            }
 
             List<String> authorities = new ArrayList<>();
-            // TODO get this from auth request
-            authorities.add("ROLE_USER");
+            authorities.add(role);
 
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     userId,
                     null,
                     authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
-            this.logger.info("User with userId '" + userId + "' authorized access");
+            this.logger.info("User with userId '" + userId + "' and role '" + role + "' authorized access");
             return Mono.just(auth);
 
         } catch (IOException e) {

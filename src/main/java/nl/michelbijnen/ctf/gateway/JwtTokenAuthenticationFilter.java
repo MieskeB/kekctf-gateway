@@ -57,6 +57,11 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
 
             JSONObject body = new JSONObject(byteSource.asCharSource(Charsets.UTF_8).read());
             String userId = body.getString("userId");
+            String role = body.getString("role");
+
+            if (role == null) {
+                role = "ROLE_USER";
+            }
 
             if (exchange.getRequest().getHeaders().get("requestingUserId") != null) {
                 this.logger.warn("User with userId '" + userId + "' tried to forge the requestingUserId header");
@@ -67,8 +72,7 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
 
             // Get role
             List<String> authorities = new ArrayList<>();
-            // TODO get this from auth request
-            authorities.add("ROLE_USER");
+            authorities.add(role);
 
             // Authenticate the user
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userId, null, authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
