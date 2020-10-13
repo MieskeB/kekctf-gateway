@@ -48,6 +48,7 @@ public class SecurityConfiguration {
                 .pathMatchers("/authentication-service/**").permitAll()
 
                 .pathMatchers(HttpMethod.POST, "/challenges-service/").hasAuthority("ROLE_ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/challenges-service/**").hasAuthority("ROLE_ADMIN")
                 .pathMatchers(HttpMethod.DELETE, "/challenges-service/**").hasAuthority("ROLE_ADMIN")
 
                 .pathMatchers(HttpMethod.GET, "/user-service/").hasAuthority("ROLE_ADMIN")
@@ -63,8 +64,9 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.applyPermitDefaultValues();
-        corsConfiguration.addAllowedMethod(HttpMethod.PATCH);
+        corsConfiguration.addAllowedMethod(HttpMethod.PUT);
         corsConfiguration.addAllowedMethod(HttpMethod.DELETE);
+        corsConfiguration.addAllowedMethod(HttpMethod.PATCH);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
