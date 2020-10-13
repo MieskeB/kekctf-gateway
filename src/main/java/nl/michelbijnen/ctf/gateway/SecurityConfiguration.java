@@ -52,6 +52,7 @@ public class SecurityConfiguration {
                 .pathMatchers(HttpMethod.DELETE, "/challenges-service/**").hasAuthority("ROLE_ADMIN")
 
                 .pathMatchers(HttpMethod.GET, "/user-service/").hasAuthority("ROLE_ADMIN")
+                .pathMatchers(HttpMethod.GET, "user-service/**").hasAuthority("ROLE_ADMIN")
                 .pathMatchers(HttpMethod.DELETE, "/user-service/**").hasAuthority("ROLE_ADMIN")
                 .pathMatchers(HttpMethod.PATCH, "/user-service/promote/**").hasAuthority("ROLE_ADMIN")
 
