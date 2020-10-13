@@ -13,6 +13,9 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 public class SecurityConfiguration {
@@ -38,19 +41,30 @@ public class SecurityConfiguration {
                 .authenticationManager(this.authenticationManager)
                 .securityContextRepository(this.securityContextRepository)
                 .authorizeExchange()
+
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
+
                 .pathMatchers("/authentication-service/checktoken").denyAll()
                 .pathMatchers("/authentication-service/**").permitAll()
+
                 .pathMatchers(HttpMethod.POST, "/challenges-service/").hasAuthority("ROLE_ADMIN")
+                .pathMatchers(HttpMethod.DELETE, "/challenges-service/**").hasAuthority("ROLE_ADMIN")
+
                 .pathMatchers(HttpMethod.GET, "/user-service/").hasAuthority("ROLE_ADMIN")
+
                 .anyExchange().authenticated()
+
                 .and().build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.applyPermitDefaultValues();
+        corsConfiguration.addAllowedMethod(HttpMethod.DELETE);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+        source.registerCorsConfiguration("/**", corsConfiguration);
         return source;
     }
 }
