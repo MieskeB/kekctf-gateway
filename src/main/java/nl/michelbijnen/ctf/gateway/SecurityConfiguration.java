@@ -42,6 +42,7 @@ public class SecurityConfiguration {
                 .pathMatchers("/authentication-service/checktoken").denyAll()
                 .pathMatchers("/authentication-service/**").permitAll()
                 .pathMatchers(HttpMethod.POST, "/challenges-service/").hasAuthority("ROLE_ADMIN")
+                .pathMatchers(HttpMethod.GET, "/user-service/").hasAuthority("ROLE_ADMIN")
                 .anyExchange().authenticated()
                 .and().build();
     }
