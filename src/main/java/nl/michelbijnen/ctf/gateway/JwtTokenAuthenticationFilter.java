@@ -39,7 +39,15 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
 
             final String token = header.replace("Bearer ", "");
 
-            URL url = new URL("http:// " + System.getenv().getOrDefault("AUTHENTICATION_SERVICE_URL", "localhost") + ":" + System.getenv().getOrDefault("AUTHENTICATION_SERVICE_PORT", "8082") + "/checktoken");
+            String host = System.getenv("AUTHENTICATION_SERVICE_URL");
+            if (host == null) {
+                host = "localhost";
+            }
+            String port = System.getenv("AUTHENTICATION_SERVICE_PORT");
+            if (port == null) {
+                port = "8082";
+            }
+            URL url = new URL("http:// " + host + ":" + port + "/checktoken");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
 
