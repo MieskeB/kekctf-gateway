@@ -2,7 +2,6 @@ package nl.michelbijnen.ctf.gateway;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteSource;
-import nl.michelbijnen.ctf.gateway.exceptions.JWTInvalidException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 
             String token = authentication.getCredentials().toString();
 
-            URL url = new URL("http://localhost:8082/checktoken");
+            URL url = new URL("http:// " + System.getenv().getOrDefault("AUTHENTICATION_SERVICE_URL", "localhost") + ":" + System.getenv().getOrDefault("AUTHENTICATION_SERVICE_PORT", "8082") + "/checktoken");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
 

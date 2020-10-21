@@ -44,6 +44,8 @@ public class SecurityConfiguration {
 
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
 
+                .pathMatchers("/actuator/**").permitAll()
+
                 .pathMatchers("/authentication-service/checktoken").denyAll()
                 .pathMatchers("/authentication-service/**").permitAll()
 
