@@ -78,6 +78,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
             return Mono.just(auth);
 
         } catch (IOException e) {
+            e.printStackTrace();
             this.logger.warn(e.getMessage());
             authentication.setAuthenticated(false);
             return Mono.empty();
