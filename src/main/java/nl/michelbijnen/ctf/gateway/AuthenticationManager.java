@@ -39,8 +39,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
             if (port == null) {
                 port = "8082";
             }
-            URL url = new URL("http:// " + host + ":" + port + "/checktoken");
-            this.logger.info(url.toString());
+            URL url = new URL("http://" + host + ":" + port + "/checktoken");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
 

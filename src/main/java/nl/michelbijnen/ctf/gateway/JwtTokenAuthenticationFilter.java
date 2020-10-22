@@ -47,7 +47,7 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
             if (port == null) {
                 port = "8082";
             }
-            URL url = new URL("http:// " + host + ":" + port + "/checktoken");
+            URL url = new URL("http://" + host + ":" + port + "/checktoken");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
 
@@ -88,6 +88,7 @@ public class JwtTokenAuthenticationFilter implements WebFilter {
 
             this.logger.debug("Authenticated: " + SecurityContextHolder.getContext().getAuthentication().isAuthenticated());
         } catch (IOException e) {
+            e.printStackTrace();
             this.logger.error(e.getMessage());
         }
 
